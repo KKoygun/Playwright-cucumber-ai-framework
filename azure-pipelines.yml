@@ -1,0 +1,100 @@
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+# ── Variables ────────────────────────────────────────────────────────────────
+variables:
+  NODE_VERSION: '20'
+  # GROQ_API_KEY is stored as a secret pipeline variable in Azure DevOps:
+  # Pipelines → Edit → Variables → Add → mark as secret
+
+# ── Stages ───────────────────────────────────────────────────────────────────
+stages:
+  - stage: Test
+    displayName: Run Cucumber Tests
+    jobs:
+      - job: smoke
+        displayName: Smoke Tests
+        steps:
+          - template: .azure/steps/test-steps.yml
+            parameters:
+              tags: '@smoke'
+              reportSuffix: smoke
+
+      - job: regression
+        displayName: Regression Tests
+        steps:
+          - template: .azure/steps/test-steps.yml
+            parameters:
+              tags: '@add or @complete or @filter or @delete or @clear or @edit'
+              reportSuffix: regression
+
+      - job: api
+        displayName: API Tests
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(NODE_VERSION)
+            displayName: Setup Node.js
+
+          - script: npm ci
+            displayName: Install dependencies
+
+          - script: |
+              npx cucumber-js \
+                --tags "@api" \
+                --format json:reports/cucumber-report-api.json \
+                --format html:reports/cucumber-report-api.html \
+                --format progress-bar
+            displayName: Run API tests (no browser required)
+            env:
+              GROQ_API_KEY: $(GROQ_API_KEY)
+              CI: true
+
+          - task: PublishPipelineArtifact@1
+            condition: always()
+            inputs:
+              targetPath: reports/
+              artifact: reports-api
+            displayName: Publish API report artifact
+
+  - stage: Report
+    displayName: Publish Report
+    dependsOn: Test
+    condition: always()
+    jobs:
+      - job: merge
+        displayName: Merge and Publish Reports
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(NODE_VERSION)
+            displayName: Setup Node.js
+
+          - script: npm ci
+            displayName: Install dependencies
+
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              patterns: 'reports-*/**'
+              path: reports/
+            displayName: Download test reports
+
+          - script: node scripts/generate-report.js
+            displayName: Generate merged HTML report
+
+          - task: PublishHtmlReport@1
+            inputs:
+              reportDir: reports/html
+              tabName: Cucumber Report
+            displayName: Publish HTML report
