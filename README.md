@@ -13,7 +13,7 @@ A portfolio project demonstrating senior-level test automation architecture: **P
 | UI Test Automation | Playwright + TypeScript |
 | BDD Layer | Cucumber with Gherkin feature files |
 | Page Object Model | `src/pages/` — selectors and actions in one place |
-| REST API Testing | Playwright `APIRequestContext` integrated into Cucumber |
+| REST API Testing | Dedicated framework → [playwright-api-framework](https://github.com/KKoygun/playwright-api-framework) |
 | AI Healer Agent | On failure: captures HTML, calls Groq (Llama), suggests selector fixes |
 | AI Planner Agent | Reads a requirements `.md` file, generates a `.feature` file |
 | AI Generator Agent | Reads a `.feature` file, generates missing step definitions |
@@ -125,33 +125,14 @@ src/steps/todo-editing.steps.ts       ← TypeScript step definitions by Generat
 
 ---
 
-## REST API Testing
-
-API tests use Playwright's `APIRequestContext` integrated directly into the Cucumber framework alongside the UI tests. No separate test runner required.
-
-```gherkin
-@api
-Feature: REST API Testing with Playwright
-
-  @smoke
-  Scenario: Fetch a single resource by ID
-    When I send a GET request to "/todos/1"
-    Then the response status should be 200
-    And the response should have field "userId"
-```
-
-API scenarios run through the same Cucumber hooks but use a separate `initApi()` / `cleanupApi()` lifecycle — no browser is launched for `@api` tagged scenarios.
-
----
-
 ## Quick Start
 
 **Prerequisites:** Node.js 18+, a free Groq API key from [console.groq.com](https://console.groq.com)
 
 ```bash
 # 1. Clone and install
-git clone <repo-url>
-cd playwright-cucumber-ai-portfolio
+git clone https://github.com/KKoygun/Playwright-cucumber-ai-framework
+cd Playwright-cucumber-ai-framework
 npm install
 npx playwright install chromium
 
@@ -189,7 +170,6 @@ npx cucumber-js --tags "not @api"                        # all UI tests
 | `@delete` | Todo deletion |
 | `@clear` | Clear completed |
 | `@edit` | AI-generated todo editing scenarios |
-| `@api` | REST API tests (Playwright APIRequestContext) |
 
 ---
 
@@ -254,4 +234,4 @@ All three agents (Healer, Planner, Generator) switch automatically — they code
 
 [https://demo.playwright.dev/todomvc](https://demo.playwright.dev/todomvc) — the official Playwright TodoMVC demo. Publicly available, no authentication required.
 
-API tests target [https://jsonplaceholder.typicode.com](https://jsonplaceholder.typicode.com) — a public REST API for testing and prototyping.
+For REST API testing see the companion repo: [playwright-api-framework](https://github.com/KKoygun/playwright-api-framework)
