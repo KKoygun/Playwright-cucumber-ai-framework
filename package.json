@@ -4,6 +4,8 @@
   "description": "Playwright + Cucumber BDD + AI Self-Healing Test Framework",
   "scripts": {
     "test": "cucumber-js",
+    "test:smoke": "cucumber-js --profile smoke",
+    "test:regression": "cucumber-js --profile regression",
     "test:ci": "cucumber-js --parallel 4",
     "plan": "ts-node scripts/plan.ts",
     "generate": "ts-node scripts/generate.ts",

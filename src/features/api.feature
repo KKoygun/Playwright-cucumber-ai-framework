@@ -11,6 +11,7 @@ Feature: REST API Testing with Playwright
     And the response should have field "userId"
     And the response should have field "title"
 
+  @regression
   Scenario: Create a new resource
     When I send a POST request to "/posts" with body:
       """
@@ -19,6 +20,7 @@ Feature: REST API Testing with Playwright
     Then the response status should be 201
     And the response field "title" should equal "Portfolio showcase"
 
+  @regression
   Scenario: List resources with query parameters
     When I send a GET request to "/todos?_limit=5"
     Then the response status should be 200

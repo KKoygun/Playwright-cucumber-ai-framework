@@ -14,7 +14,7 @@ Feature: TodoMVC Task Management
     Then I should see 1 todo item
     And the todo "Buy groceries" should be visible
 
-  @add
+  @regression @add
   Scenario: Add multiple todo items
     When I add a todo "Buy groceries"
     And I add a todo "Walk the dog"
@@ -29,7 +29,7 @@ Feature: TodoMVC Task Management
     When I complete todo number 1
     Then todo number 1 should be marked as completed
 
-  @complete
+  @regression @complete
   Scenario: Complete one of multiple todos
     Given I have added a todo "Buy groceries"
     And I have added a todo "Walk the dog"
@@ -39,7 +39,7 @@ Feature: TodoMVC Task Management
 
   # ── Delete Todos ───────────────────────────────────────────────────────────
 
-  @delete
+  @regression @delete
   Scenario: Delete a todo item
     Given I have added a todo "Buy groceries"
     And I have added a todo "Walk the dog"
@@ -49,7 +49,7 @@ Feature: TodoMVC Task Management
 
   # ── Filter Todos ───────────────────────────────────────────────────────────
 
-  @filter
+  @regression @filter
   Scenario: Filter active todos
     Given I have added a todo "Buy groceries"
     And I have added a todo "Walk the dog"
@@ -57,7 +57,7 @@ Feature: TodoMVC Task Management
     And I filter todos by "Active"
     Then I should see 1 todo item
 
-  @filter
+  @regression @filter
   Scenario: Filter completed todos
     Given I have added a todo "Buy groceries"
     And I have added a todo "Walk the dog"
@@ -76,7 +76,7 @@ Feature: TodoMVC Task Management
 
   # ── Clear Completed ────────────────────────────────────────────────────────
 
-  @clear
+  @regression @clear
   Scenario: Clear all completed todos
     Given I have added a todo "Buy groceries"
     And I have added a todo "Walk the dog"
