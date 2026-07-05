@@ -13,8 +13,12 @@ const common = {
     'progress-bar',
     'json:reports/cucumber-report.json',
     'html:reports/cucumber-report.html',
+    'allure-cucumberjs/reporter',
   ],
-  formatOptions: { snippetInterface: 'async-await' },
+  formatOptions: {
+    snippetInterface: 'async-await',
+    allureResultsDir: 'allure-results',
+  },
 };
 
 module.exports = {

@@ -46,7 +46,15 @@ jobs:
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           CI: true
-        run: npx cucumber-js --tags "${{ matrix.tag }}" --format json:reports/cucumber-report-${{ strategy.job-index }}.json --format html:reports/cucumber-report-${{ strategy.job-index }}.html --format progress-bar
+        run: npx cucumber-js --tags "${{ matrix.tag }}" --format json:reports/cucumber-report-${{ strategy.job-index }}.json --format html:reports/cucumber-report-${{ strategy.job-index }}.html --format progress-bar --format allure-cucumberjs/reporter
+
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-results-${{ strategy.job-index }}
+          path: allure-results/
+          retention-days: 7
 
       - name: Upload test report artifact
         uses: actions/upload-artifact@v4
@@ -57,7 +65,7 @@ jobs:
           retention-days: 7
 
   # ── Merge Reports ───────────────────────────────────────────────────────────
-  # Collects all shard artifacts and produces a single merged HTML report.
+  # Collects all shard artifacts and produces a single merged HTML + Allure report.
   merge-reports:
     name: Merge Reports
     needs: test
@@ -84,12 +92,29 @@ jobs:
           path: reports/
           merge-multiple: true
 
+      - name: Download all Allure results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: allure-results-*
+          path: allure-results/
+          merge-multiple: true
+
       - name: Generate merged HTML report
         run: node scripts/generate-report.js
 
-      - name: Upload merged report
+      - name: Generate Allure report
+        run: npm run allure:generate
+
+      - name: Upload merged HTML report
         uses: actions/upload-artifact@v4
         with:
           name: cucumber-report-merged
           path: reports/html/
+          retention-days: 30
+
+      - name: Upload Allure report
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report/
           retention-days: 30
