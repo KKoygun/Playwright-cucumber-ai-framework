@@ -136,10 +136,11 @@ async function main(): Promise<void> {
           };
         } catch (error) {
           console.warn(`[Eval]   ${name}: call failed, nothing saved — ${error}`);
-          const status = (error as { status?: number }).status;
-          if (status === 401 || status === 403 || status === 404) {
+          const { status, code } = error as { status?: number; code?: string };
+          // An empty balance (429 insufficient_quota) will not recover between cases either
+          if (status === 401 || status === 403 || status === 404 || code === 'insufficient_quota') {
             rejected.add(name);
-            console.warn(`[Eval]   ${name}: key or model rejected — skipping it for the remaining cases`);
+            console.warn(`[Eval]   ${name}: key, model or billing rejected — skipping it for the remaining cases`);
           }
           continue;
         }

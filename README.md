@@ -178,7 +178,7 @@ src/steps/todo-editing.steps.ts       ← TypeScript step definitions by Generat
 Model responses are recorded once and replayed after that, so the eval runs in CI without keys:
 
 ```bash
-npm run eval:record -- --providers=groq          # needs AI_API_KEY and AI_MODEL; saves eval/cassettes/groq/*.json
+npm run eval:record -- --providers=groq          # needs GROQ_API_KEY and AI_MODEL; saves eval/cassettes/groq/*.json
 npm run eval:record -- --providers=ollama        # needs a running Ollama and AI_MODEL set to one of its models
 npm run eval:healer                              # replays every recorded provider
 npm run eval:healer -- --check                   # only checks that each case breaks as intended
@@ -242,8 +242,8 @@ npx playwright install chromium
 
 # 2. Configure environment
 cp .env.example .env
-# Edit .env — set AI_PROVIDER, AI_API_KEY and AI_MODEL
-npm run models            # lists the models your key can use
+# Edit .env — set AI_PROVIDER, the provider's key and AI_MODEL
+npm run models            # lists the models your key can use (npm run models -- gpt to filter)
 
 # 3. Run all tests
 npm test
@@ -325,15 +325,13 @@ Templated YAML (`azure-pipelines.yml` + `.azure/steps/test-steps.yml`) with smok
 
 ## Switching AI Provider
 
-Set `AI_PROVIDER`, `AI_API_KEY` and `AI_MODEL` in `.env`.
+Set `AI_PROVIDER`, the provider's key and `AI_MODEL` in `.env`. Each provider has its own key variable (`GROQ_API_KEY`, `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`), so one `.env` can hold several and `AI_PROVIDER` picks between them. `AI_API_KEY` is used for a provider that has no key of its own set.
 
 **There is no default model.** `AI_MODEL` is sent exactly as written, and nothing falls back to another model. Providers retire models over time; when that happens the call fails with a message naming the model, and `npm run models` lists the ones your key can use right now:
 
 ```bash
 npm run models
 ```
-
-The provider-specific key names (`GROQ_API_KEY`, `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`) also work, which is what the CI pipelines use.
 
 | Provider | `AI_PROVIDER` | Example `AI_MODEL` | Where to get a key | Verification |
 |---|---|---|---|---|

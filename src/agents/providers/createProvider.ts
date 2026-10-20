@@ -8,14 +8,15 @@ import { OpenAIProvider } from './OpenAIProvider';
 export const PROVIDER_NAMES = ['groq', 'gemini', 'claude', 'openai', 'ollama'] as const;
 
 /**
- * Picks the provider from AI_PROVIDER (default groq) and gives it AI_API_KEY and
- * AI_MODEL. There is no default model: npm run models lists what the key can use.
- * The provider-specific key names (GROQ_API_KEY, ...) still work, e.g. for CI secrets.
+ * Picks the provider from AI_PROVIDER (default groq) and gives it its key and AI_MODEL.
+ * The key is the provider's own variable (GROQ_API_KEY, OPENAI_API_KEY, ...), so .env
+ * can hold several; AI_API_KEY is used when that one is not set.
+ * There is no default model: npm run models lists what the key can use.
  */
 export function createProvider(name = process.env.AI_PROVIDER || 'groq'): ChatProvider {
   const env = process.env;
   const model = env.AI_MODEL;
-  const key = (fallback: string | undefined) => env.AI_API_KEY || fallback || '';
+  const key = (own: string | undefined) => own || env.AI_API_KEY || '';
 
   switch (name.toLowerCase()) {
     case 'groq':
