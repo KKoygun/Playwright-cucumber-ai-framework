@@ -210,6 +210,7 @@ async function main(): Promise<void> {
   ];
   if (summary.length > 0) {
     lines.push(
+      '',
       '| Provider | Model | Healed (top 1) | Success rate | Healed (top 3) | Invalid | Avg latency | Avg tokens in / out |',
       '|---|---|---|---|---|---|---|---|',
       ...summary.map(

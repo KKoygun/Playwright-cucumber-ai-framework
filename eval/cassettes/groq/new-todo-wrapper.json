@@ -1,0 +1,11 @@
+{
+  "provider": "groq",
+  "model": "openai/gpt-oss-120b",
+  "caseId": "new-todo-wrapper",
+  "promptSha256": "5886a31b072c7612e16428dd263319eeefc1167e336d5c611a7f816ab5113871",
+  "recordedAt": "2026-10-20T16:54:26.911Z",
+  "latencyMs": 1224,
+  "inputTokens": 956,
+  "outputTokens": 484,
+  "text": "[\n  {\n    \"suggestedSelector\": \".header input.new-todo\",\n    \"confidence\": \"high\",\n    \"reasoning\": \"Selects the input with class 'new-todo' that is a descendant of the header, matching the actual DOM structure.\"\n  },\n  {\n    \"suggestedSelector\": \"input.new-todo[placeholder='What needs to be done?']\",\n    \"confidence\": \"high\",\n    \"reasoning\": \"Targets the input by its unique placeholder text combined with its class, ensuring precise identification.\"\n  },\n  {\n    \"suggestedSelector\": \"//header[contains(@class,'header')]//input[contains(@class,'new-todo')]\",\n    \"confidence\": \"medium\",\n    \"reasoning\": \"XPath that navigates to the header element and finds any descendant input with class 'new-todo', robust against extra wrapper elements.\"\n  }\n]"
+}

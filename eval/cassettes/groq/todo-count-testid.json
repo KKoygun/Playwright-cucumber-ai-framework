@@ -1,0 +1,11 @@
+{
+  "provider": "groq",
+  "model": "openai/gpt-oss-120b",
+  "caseId": "todo-count-testid",
+  "promptSha256": "3f3cae326ef3928e9ab63f14b1f6be1f50a97d69a0ef1972ef53d662d180a838",
+  "recordedAt": "2026-10-20T16:54:23.884Z",
+  "latencyMs": 1127,
+  "inputTokens": 946,
+  "outputTokens": 470,
+  "text": "[\n  {\n    \"suggestedSelector\": \"css=footer .todo-count\",\n    \"confidence\": \"high\",\n    \"reasoning\": \"Selects the span with class 'todo-count' inside the footer, which displays the remaining items count.\"\n  },\n  {\n    \"suggestedSelector\": \"xpath=//span[contains(@class,'todo-count')]\",\n    \"confidence\": \"high\",\n    \"reasoning\": \"XPath targeting any span element whose class attribute includes 'todo-count'.\"\n  },\n  {\n    \"suggestedSelector\": \"css=section.todoapp footer span.todo-count\",\n    \"confidence\": \"medium\",\n    \"reasoning\": \"More specific CSS path ensuring the element within the TodoMVC app section.\"\n  }\n]"
+}

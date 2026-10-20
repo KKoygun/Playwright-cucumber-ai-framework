@@ -1,0 +1,11 @@
+{
+  "provider": "groq",
+  "model": "openai/gpt-oss-120b",
+  "caseId": "todo-title-testid",
+  "promptSha256": "d3164d2ac682533b7e8838b43a4d297ba1fe6d66a071d9bab150ba782c48ce81",
+  "recordedAt": "2026-10-20T16:54:21.036Z",
+  "latencyMs": 1198,
+  "inputTokens": 944,
+  "outputTokens": 506,
+  "text": "[\n  {\n    \"suggestedSelector\": \"ul.todo-list > li[data-testid=\\\"todo-item\\\"]:nth-of-type(3) > div.view > label\",\n    \"confidence\": \"high\",\n    \"reasoning\": \"Targets the third todo item (zero‑based nth=2) by its stable data-testid and then selects the label containing the title.\"\n  },\n  {\n    \"suggestedSelector\": \"(//li[@data-testid='todo-item'])[3]//label\",\n    \"confidence\": \"high\",\n    \"reasoning\": \"XPath directly picks the third element with data-testid='todo-item' and retrieves its label, independent of CSS class changes.\"\n  },\n  {\n    \"suggestedSelector\": \"[data-testid='todo-item'] >> nth=2 >> label\",\n    \"confidence\": \"medium\",\n    \"reasoning\": \"Uses Playwright’s built‑in nth filter on the data-testid and then selects the label; works if the list order stays consistent.\"\n  }\n]"
+}

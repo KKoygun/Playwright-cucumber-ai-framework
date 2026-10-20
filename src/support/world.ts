@@ -58,7 +58,7 @@ export class CustomWorld extends World<WorldParameters> {
     });
     this.page = await this.context.newPage();
 
-    // ── Swap provider here: AI_PROVIDER in .env, or e.g. new OllamaProvider() ──
+    // ── Swap provider here: AI_PROVIDER + AI_MODEL in .env, or e.g. new OllamaProvider({ model }) ──
     const provider = createProvider();
     this.healer = new HealerAgent(provider);
     this.healing = new HealingLocator(this.page, this.healer);

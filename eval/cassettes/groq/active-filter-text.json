@@ -1,0 +1,11 @@
+{
+  "provider": "groq",
+  "model": "openai/gpt-oss-120b",
+  "caseId": "active-filter-text",
+  "promptSha256": "f000d647f45f0238da79e6effd65327a0584bbe13a43090ca8ec38e6b59527aa",
+  "recordedAt": "2026-10-20T16:54:35.995Z",
+  "latencyMs": 4244,
+  "inputTokens": 954,
+  "outputTokens": 425,
+  "text": "[\n  {\n    \"suggestedSelector\": \"ul.filters > li > a[href=\\\"#/active\\\"]\",\n    \"confidence\": \"high\",\n    \"reasoning\": \"Targets the filter link for active items via its unique href attribute within the .filters list\"\n  },\n  {\n    \"suggestedSelector\": \"//ul[@class='filters']//a[normalize-space(.)='Open']\",\n    \"confidence\": \"high\",\n    \"reasoning\": \"XPath that selects the anchor whose visible text is exactly \\\"Open\\\", which corresponds to the Active filter\"\n  },\n  {\n    \"suggestedSelector\": \"ul.filters a:has-text(\\\"Open\\\")\",\n    \"confidence\": \"medium\",\n    \"reasoning\": \"Playwright text selector within the .filters list; works as long as the link text remains \\\"Open\\\"\"\n  }\n]"
+}

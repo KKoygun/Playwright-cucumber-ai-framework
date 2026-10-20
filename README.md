@@ -59,7 +59,7 @@ src/
 ├── agents/
 │   ├── providers/
 │   │   ├── AIProvider.ts       # Interface — the contract all providers implement
-│   │   ├── ChatProvider.ts     # Shared healing flow; each provider only implements chat()
+│   │   ├── ChatProvider.ts     # Shared healing flow; each provider implements send() and listModels()
 │   │   ├── createProvider.ts   # Picks the provider from AI_PROVIDER
 │   │   ├── GroqProvider.ts     # Open models on Groq free tier (default)
 │   │   ├── GeminiProvider.ts   # Google Gemini free tier
@@ -80,6 +80,7 @@ scripts/
 ├── plan.ts                 # CLI: requirements .md → .feature file
 ├── generate.ts             # CLI: .feature file → missing step definitions
 ├── eval-healer.ts          # CLI: healer eval (replay / record / check)
+├── models.ts               # CLI: models your key can use (npm run models)
 └── generate-report.js      # Merges JSON reports into a single HTML report
 ```
 
@@ -97,14 +98,14 @@ Hardcoding any single AI provider into the agents means every future provider sw
 
 ```bash
 AI_PROVIDER=ollama          # groq | gemini | claude | openai | ollama
-AI_MODEL=qwen2.5-coder:7b   # npm run models lists what is available
+AI_MODEL=llama3.1:8b        # npm run models lists what is available
 ```
 
 or swap the one line in `src/support/world.ts`:
 
 ```ts
-const provider = createProvider();        // reads AI_PROVIDER
-const provider = new OllamaProvider({ model: 'qwen2.5-coder:7b' });   // or any provider directly
+const provider = createProvider();                                // reads AI_PROVIDER and AI_MODEL
+const provider = new OllamaProvider({ model: 'llama3.1:8b' });   // or any provider directly
 ```
 
 Nothing else changes. This is the **Open/Closed Principle** applied to AI integration.
@@ -178,7 +179,7 @@ Model responses are recorded once and replayed after that, so the eval runs in C
 
 ```bash
 npm run eval:record -- --providers=groq          # needs AI_API_KEY and AI_MODEL; saves eval/cassettes/groq/*.json
-npm run eval:record -- --providers=ollama        # needs a running Ollama
+npm run eval:record -- --providers=ollama        # needs a running Ollama and AI_MODEL set to one of its models
 npm run eval:healer                              # replays every recorded provider
 npm run eval:healer -- --check                   # only checks that each case breaks as intended
 ```
@@ -187,7 +188,13 @@ Results go to `reports/eval/results.json` and `results.md` (success rate, top-3 
 
 ### Results
 
-> **Not recorded yet.** Run `npm run eval:record -- --providers=groq`, then `npm run eval:healer`, and paste the table from `reports/eval/results.md` here.
+Recorded on 2026-10-20 against the live demo. The recordings are in [`eval/cassettes`](eval/cassettes) and CI replays them.
+
+| Provider | Model | Healed (top 1) | Success rate | Healed (top 3) | Invalid | Avg latency | Avg tokens in / out |
+|---|---|---|---|---|---|---|---|
+| groq | openai/gpt-oss-120b | 9/9 | 100% | 9/9 | 0 | 2322 ms | 952 / 414 |
+
+Nine cases is a small set: it shows the scoring works end to end, not how the Healer does on a real application. To add a provider, set `AI_PROVIDER` / `AI_MODEL` and run `npm run eval:record -- --providers=<name>`.
 
 ---
 
@@ -330,7 +337,7 @@ The provider-specific key names (`GROQ_API_KEY`, `GEMINI_API_KEY`, `ANTHROPIC_AP
 
 | Provider | `AI_PROVIDER` | Example `AI_MODEL` | Where to get a key | Verification |
 |---|---|---|---|---|
-| **Groq** | `groq` (default) | `openai/gpt-oss-120b` | Free at [console.groq.com](https://console.groq.com) | Mock-tested; the provider behind the plan/generate example above |
+| **Groq** | `groq` (default) | `openai/gpt-oss-120b` | Free at [console.groq.com](https://console.groq.com) | **Verified live** — eval recorded 2026-10-20 |
 | **Google Gemini** | `gemini` | `gemini-2.0-flash-lite` | Free at [aistudio.google.com](https://aistudio.google.com) | Mock-tested only |
 | **Anthropic Claude** | `claude` | `claude-opus-5-5` | [console.anthropic.com](https://console.anthropic.com) | Mock-tested only |
 | **OpenAI** | `openai` | `gpt-4.1-mini` | [platform.openai.com](https://platform.openai.com) | Mock-tested only |
