@@ -14,7 +14,7 @@ pool:
 
 # ── Variables ────────────────────────────────────────────────────────────────
 variables:
-  NODE_VERSION: '20'
+  NODE_VERSION: '22'
   # GROQ_API_KEY is stored as a secret pipeline variable in Azure DevOps:
   # Pipelines → Edit → Variables → Add → mark as secret
 
