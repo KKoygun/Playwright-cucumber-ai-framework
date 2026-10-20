@@ -248,8 +248,9 @@ npm run models            # lists the models your key can use (npm run models --
 # 3. Run all tests
 npm test
 
-# 4. Generate HTML report
-npm run report
+# 4. Generate reports
+npm run report                                   # merged HTML report
+npm run allure:generate && npm run allure:open   # Allure report
 ```
 
 Tests run without an API key — the Healer agent is only called on failure, and the framework handles missing keys gracefully.

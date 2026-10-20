@@ -1,7 +1,10 @@
 {
-  "name": "playwright-cucumber-ai-portfolio",
+  "name": "playwright-cucumber-ai-framework",
   "version": "1.0.0",
   "description": "Playwright + Cucumber BDD + AI Self-Healing Test Framework",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "test": "cucumber-js",
     "test:smoke": "cucumber-js --profile smoke",
