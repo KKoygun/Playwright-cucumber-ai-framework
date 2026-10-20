@@ -10,6 +10,8 @@
     "test:unit": "playwright test",
     "plan": "ts-node scripts/plan.ts",
     "generate": "ts-node scripts/generate.ts",
+    "eval:healer": "ts-node scripts/eval-healer.ts",
+    "eval:record": "ts-node scripts/eval-healer.ts --record",
     "report": "node scripts/generate-report.js",
     "allure:generate": "allure generate allure-results --clean -o allure-report",
     "allure:open": "allure open allure-report",
