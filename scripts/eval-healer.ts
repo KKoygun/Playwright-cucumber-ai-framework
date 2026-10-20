@@ -16,7 +16,7 @@ dotenv.config();
  * provider's top suggestion: healed only if it finds exactly the original element.
  *
  *   npm run eval:healer                               replay saved responses (no keys, used in CI)
- *   npm run eval:record -- --providers=groq,ollama    call the providers and save their responses
+ *   npm run eval:record -- --providers=groq           call one provider (AI_MODEL) and save its responses
  *   npm run eval:healer -- --check                    only check that every case breaks as intended
  */
 
@@ -78,9 +78,23 @@ async function main(): Promise<void> {
     console.log('[Eval] Checking the cases only.\n');
   }
 
+  if (record) {
+    // AI_MODEL names one model of one provider, so record providers one at a time
+    if (providers.length > 1) {
+      console.error('[Eval] Record one provider at a time: AI_MODEL belongs to a single provider.');
+      process.exit(1);
+    }
+    if (!createProvider(providers[0]).model) {
+      console.error('[Eval] AI_MODEL is not set. Run "npm run models" and put one of them in .env.');
+      process.exit(1);
+    }
+  }
+
   const browser = await chromium.launch();
   const cases: { id: string; mutation: string; selector: string; valid: boolean; note?: string }[] = [];
   const runs: Run[] = [];
+  // A rejected key or unknown model fails every case the same way, so stop calling that provider
+  const rejected = new Set<string>();
 
   for (const evalCase of CASES) {
     const page = await browser.newPage();
@@ -101,7 +115,7 @@ async function main(): Promise<void> {
       pageUrl: page.url(),
     });
 
-    for (const name of providers) {
+    for (const name of providers.filter((p) => !rejected.has(p))) {
       let cassette: Cassette;
 
       if (record) {
@@ -122,6 +136,11 @@ async function main(): Promise<void> {
           };
         } catch (error) {
           console.warn(`[Eval]   ${name}: call failed, nothing saved — ${error}`);
+          const status = (error as { status?: number }).status;
+          if (status === 401 || status === 403 || status === 404) {
+            rejected.add(name);
+            console.warn(`[Eval]   ${name}: key or model rejected — skipping it for the remaining cases`);
+          }
           continue;
         }
         fs.mkdirSync(path.dirname(cassettePath(name, evalCase.id)), { recursive: true });
@@ -162,7 +181,7 @@ async function main(): Promise<void> {
 
   await browser.close();
 
-  const summary = providers.map((name) => {
+  const summary = providers.filter((name) => runs.some((r) => r.provider === name)).map((name) => {
     const own = runs.filter((r) => r.provider === name);
     const healed = own.filter((r) => r.outcome === 'healed').length;
     return {

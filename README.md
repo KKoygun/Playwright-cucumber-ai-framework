@@ -61,7 +61,7 @@ src/
 │   │   ├── AIProvider.ts       # Interface — the contract all providers implement
 │   │   ├── ChatProvider.ts     # Shared healing flow; each provider only implements chat()
 │   │   ├── createProvider.ts   # Picks the provider from AI_PROVIDER
-│   │   ├── GroqProvider.ts     # Llama 3.3 70B via Groq free tier (default)
+│   │   ├── GroqProvider.ts     # Open models on Groq free tier (default)
 │   │   ├── GeminiProvider.ts   # Google Gemini free tier
 │   │   ├── ClaudeProvider.ts   # Anthropic Messages API
 │   │   ├── OpenAIProvider.ts   # OpenAI Chat Completions API
@@ -96,14 +96,15 @@ Playwright's runner is excellent for developer-centric testing. Cucumber adds a 
 Hardcoding any single AI provider into the agents means every future provider swap requires touching agent logic. By coding against the `AIProvider` interface, agents never import a specific SDK. Pick the provider in `.env`:
 
 ```bash
-AI_PROVIDER=ollama   # groq | gemini | claude | openai | ollama
+AI_PROVIDER=ollama          # groq | gemini | claude | openai | ollama
+AI_MODEL=qwen2.5-coder:7b   # npm run models lists what is available
 ```
 
 or swap the one line in `src/support/world.ts`:
 
 ```ts
 const provider = createProvider();        // reads AI_PROVIDER
-const provider = new OllamaProvider();    // or any provider directly
+const provider = new OllamaProvider({ model: 'qwen2.5-coder:7b' });   // or any provider directly
 ```
 
 Nothing else changes. This is the **Open/Closed Principle** applied to AI integration.
@@ -176,7 +177,7 @@ src/steps/todo-editing.steps.ts       ← TypeScript step definitions by Generat
 Model responses are recorded once and replayed after that, so the eval runs in CI without keys:
 
 ```bash
-npm run eval:record -- --providers=groq          # needs GROQ_API_KEY; saves eval/cassettes/groq/*.json
+npm run eval:record -- --providers=groq          # needs AI_API_KEY and AI_MODEL; saves eval/cassettes/groq/*.json
 npm run eval:record -- --providers=ollama        # needs a running Ollama
 npm run eval:healer                              # replays every recorded provider
 npm run eval:healer -- --check                   # only checks that each case breaks as intended
@@ -234,7 +235,8 @@ npx playwright install chromium
 
 # 2. Configure environment
 cp .env.example .env
-# Edit .env — set AI_PROVIDER and the matching key
+# Edit .env — set AI_PROVIDER, AI_API_KEY and AI_MODEL
+npm run models            # lists the models your key can use
 
 # 3. Run all tests
 npm test
@@ -306,25 +308,35 @@ npm test
 - **Tag matrix** — parallel jobs per tag group (including `@a11y`); `@api` jobs skip the browser install. A final job merges the reports into one HTML report and one Allure report.
 - **Healer eval (replay)** — runs the eval against recorded responses and uploads `reports/eval/`.
 
-Add `GROQ_API_KEY` as a repository secret so the Healer can run on failures: **Settings → Secrets → Actions → New repository secret**
+So the Healer can run on failures, add `GROQ_API_KEY` as a repository secret and `AI_MODEL` as a repository variable (optionally `AI_PROVIDER` too): **Settings → Secrets and variables → Actions**
 
 ### Azure DevOps
 
-Templated YAML (`azure-pipelines.yml` + `.azure/steps/test-steps.yml`) with smoke, regression, and API jobs running in parallel. Store `GROQ_API_KEY` as a secret pipeline variable: **Pipelines → Edit → Variables → Add → mark as secret**
+Templated YAML (`azure-pipelines.yml` + `.azure/steps/test-steps.yml`) with smoke, regression, and API jobs running in parallel. Store `GROQ_API_KEY` as a secret pipeline variable and `AI_MODEL` as a plain one: **Pipelines → Edit → Variables → Add**
 
 ---
 
 ## Switching AI Provider
 
-Set `AI_PROVIDER` in `.env`; `AI_MODEL` overrides the default model.
+Set `AI_PROVIDER`, `AI_API_KEY` and `AI_MODEL` in `.env`.
 
-| Provider | `AI_PROVIDER` | Default model | Key | Verification |
+**There is no default model.** `AI_MODEL` is sent exactly as written, and nothing falls back to another model. Providers retire models over time; when that happens the call fails with a message naming the model, and `npm run models` lists the ones your key can use right now:
+
+```bash
+npm run models
+```
+
+The provider-specific key names (`GROQ_API_KEY`, `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`) also work, which is what the CI pipelines use.
+
+| Provider | `AI_PROVIDER` | Example `AI_MODEL` | Where to get a key | Verification |
 |---|---|---|---|---|
-| **Groq** | `groq` (default) | `llama-3.3-70b-versatile` | `GROQ_API_KEY` — free at [console.groq.com](https://console.groq.com) | Mock-tested; the provider behind the plan/generate example above |
-| **Google Gemini** | `gemini` | `gemini-2.0-flash-lite` | `GEMINI_API_KEY` — free at [aistudio.google.com](https://aistudio.google.com) | Mock-tested only |
-| **Anthropic Claude** | `claude` | `claude-opus-5-5` | `ANTHROPIC_API_KEY` — [console.anthropic.com](https://console.anthropic.com) | Mock-tested only |
-| **OpenAI** | `openai` | `gpt-4.1-mini` | `OPENAI_API_KEY` — [platform.openai.com](https://platform.openai.com) | Mock-tested only |
-| **Ollama** (local) | `ollama` | `llama3.1:8b` | none — `OLLAMA_HOST`, default `http://localhost:11434` | Mock-tested only |
+| **Groq** | `groq` (default) | `openai/gpt-oss-120b` | Free at [console.groq.com](https://console.groq.com) | Mock-tested; the provider behind the plan/generate example above |
+| **Google Gemini** | `gemini` | `gemini-2.0-flash-lite` | Free at [aistudio.google.com](https://aistudio.google.com) | Mock-tested only |
+| **Anthropic Claude** | `claude` | `claude-opus-5-5` | [console.anthropic.com](https://console.anthropic.com) | Mock-tested only |
+| **OpenAI** | `openai` | `gpt-4.1-mini` | [platform.openai.com](https://platform.openai.com) | Mock-tested only |
+| **Ollama** (local) | `ollama` | `llama3.1:8b` | No key — `OLLAMA_HOST`, default `http://localhost:11434` | Mock-tested only |
+
+The example models were current when this was written — `npm run models` is the source of truth.
 
 "Mock-tested" means the request and response handling is covered by unit tests against a fake HTTP layer; it has not been exercised against the real service in this repo. A provider moves to "verified live" once it has recorded eval results.
 

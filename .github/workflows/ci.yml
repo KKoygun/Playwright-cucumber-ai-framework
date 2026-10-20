@@ -103,6 +103,8 @@ jobs:
       - name: Run Cucumber tests
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          AI_PROVIDER: ${{ vars.AI_PROVIDER || 'groq' }}
+          AI_MODEL: ${{ vars.AI_MODEL }}
           CI: true
         run: npx cucumber-js --tags "${{ matrix.tag }}" --format json:reports/cucumber-report-${{ strategy.job-index }}.json --format html:reports/cucumber-report-${{ strategy.job-index }}.html --format progress-bar --format allure-cucumberjs/reporter
 

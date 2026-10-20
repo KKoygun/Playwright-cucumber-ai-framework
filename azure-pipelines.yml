@@ -15,7 +15,7 @@ pool:
 # ── Variables ────────────────────────────────────────────────────────────────
 variables:
   NODE_VERSION: '22'
-  # GROQ_API_KEY is stored as a secret pipeline variable in Azure DevOps:
+  # GROQ_API_KEY (secret) and AI_MODEL are pipeline variables in Azure DevOps:
   # Pipelines → Edit → Variables → Add → mark as secret
 
 # ── Stages ───────────────────────────────────────────────────────────────────
@@ -59,6 +59,7 @@ stages:
             displayName: Run API tests (no browser required)
             env:
               GROQ_API_KEY: $(GROQ_API_KEY)
+              AI_MODEL: $(AI_MODEL)
               CI: true
 
           - task: PublishPipelineArtifact@1

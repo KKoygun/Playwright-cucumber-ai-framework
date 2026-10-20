@@ -29,7 +29,7 @@ test.describe('ClaudeProvider', () => {
 
   test('posts to the Messages API and maps suggestions and usage', async () => {
     const { fetch, calls } = fakeFetch(message);
-    const provider = new ClaudeProvider('test-key', { fetch });
+    const provider = new ClaudeProvider('test-key', { fetch, model: 'claude-opus-5-5' });
 
     const result = await provider.analyzeFailure(FAILURE);
 
@@ -44,12 +44,12 @@ test.describe('ClaudeProvider', () => {
 
   test('throws when the model declines', async () => {
     const { fetch } = fakeFetch({ ...message, content: [], stop_reason: 'refusal', stop_details: { type: 'refusal', category: 'cyber', explanation: null } });
-    await expect(new ClaudeProvider('test-key', { fetch }).complete('hi')).rejects.toThrow('declined');
+    await expect(new ClaudeProvider('test-key', { fetch, model: 'claude-opus-5-5' }).complete('hi')).rejects.toThrow('declined');
   });
 
   test('surfaces an auth failure', async () => {
     const { fetch } = fakeFetch({ type: 'error', error: { type: 'authentication_error', message: 'invalid x-api-key' } }, 401);
-    await expect(new ClaudeProvider('bad-key', { fetch }).complete('hi')).rejects.toThrow('invalid x-api-key');
+    await expect(new ClaudeProvider('bad-key', { fetch, model: 'claude-opus-5-5' }).complete('hi')).rejects.toThrow('invalid x-api-key');
   });
 });
 
@@ -71,14 +71,14 @@ test.describe('OpenAIProvider', () => {
 test.describe('GroqProvider', () => {
   test('posts to the Groq OpenAI-compatible endpoint', async () => {
     const { fetch, calls } = fakeFetch(chatCompletion(SUGGESTION_JSON));
-    const provider = new GroqProvider('gsk-test', { fetch });
+    const provider = new GroqProvider('gsk-test', { fetch, model: 'openai/gpt-oss-120b' });
 
     const result = await provider.analyzeFailure(FAILURE);
 
     expect(calls[0].url).toBe('https://api.groq.com/openai/v1/chat/completions');
     expect(calls[0].headers.get('authorization')).toBe('Bearer gsk-test');
-    expect(calls[0].body.model).toBe('llama-3.3-70b-versatile');
-    expect(result.model).toBe('llama-3.3-70b-versatile');
+    expect(calls[0].body.model).toBe('openai/gpt-oss-120b');
+    expect(result.model).toBe('openai/gpt-oss-120b');
   });
 });
 
@@ -92,7 +92,7 @@ test.describe('GeminiProvider', () => {
     const original = globalThis.fetch;
     globalThis.fetch = fetch;
     try {
-      const result = await new GeminiProvider('g-test').analyzeFailure(FAILURE);
+      const result = await new GeminiProvider('g-test', { model: 'gemini-2.0-flash-lite' }).analyzeFailure(FAILURE);
 
       expect(calls[0].url).toContain('generativelanguage.googleapis.com');
       expect(calls[0].url).toContain('gemini-2.0-flash-lite:generateContent');
@@ -107,7 +107,7 @@ test.describe('GeminiProvider', () => {
 test.describe('OllamaProvider', () => {
   test('posts to the local /api/chat endpoint without streaming', async () => {
     const { fetch, calls } = fakeFetch({ message: { role: 'assistant', content: SUGGESTION_JSON }, prompt_eval_count: 640, eval_count: 52 });
-    const provider = new OllamaProvider({ fetch });
+    const provider = new OllamaProvider({ fetch, model: 'llama3.1:8b' });
 
     const result = await provider.analyzeFailure(FAILURE);
 
@@ -118,26 +118,53 @@ test.describe('OllamaProvider', () => {
 
   test('accepts OLLAMA_HOST without a scheme', async () => {
     const { fetch, calls } = fakeFetch({ message: { content: '[]' } });
-    await new OllamaProvider({ fetch, host: '10.0.0.5:11434' }).complete('hi');
+    await new OllamaProvider({ fetch, host: '10.0.0.5:11434', model: 'llama3.1:8b' }).complete('hi');
     expect(calls[0].url).toBe('http://10.0.0.5:11434/api/chat');
   });
 
   test('explains a refused connection', async () => {
     const refused = (async () => { throw new TypeError('fetch failed'); }) as typeof fetch;
-    await expect(new OllamaProvider({ fetch: refused }).complete('hi')).rejects.toThrow('ollama serve');
+    await expect(new OllamaProvider({ fetch: refused, model: 'llama3.1:8b' }).complete('hi')).rejects.toThrow('ollama serve');
   });
 
   test('surfaces an HTTP error', async () => {
     const { fetch } = fakeFetch({ error: 'model "nope" not found' }, 404);
-    await expect(new OllamaProvider({ fetch, model: 'nope' }).complete('hi')).rejects.toThrow('404');
+    await expect(new OllamaProvider({ fetch, model: 'nope' }).complete('hi')).rejects.toThrow('npm run models');
   });
 });
 
 test('hosted providers fail fast without a key and never call the network', async () => {
   const { fetch, calls } = fakeFetch({});
-  await expect(new ClaudeProvider('', { fetch }).complete('hi')).rejects.toThrow('ANTHROPIC_API_KEY');
-  await expect(new OpenAIProvider('', { fetch }).complete('hi')).rejects.toThrow('OPENAI_API_KEY');
-  await expect(new GroqProvider('', { fetch }).complete('hi')).rejects.toThrow('GROQ_API_KEY');
-  await expect(new GeminiProvider('').complete('hi')).rejects.toThrow('GEMINI_API_KEY');
+  await expect(new ClaudeProvider('', { fetch, model: 'm' }).complete('hi')).rejects.toThrow('AI_API_KEY');
+  await expect(new OpenAIProvider('', { fetch, model: 'm' }).complete('hi')).rejects.toThrow('AI_API_KEY');
+  await expect(new GroqProvider('', { fetch, model: 'm' }).complete('hi')).rejects.toThrow('AI_API_KEY');
+  await expect(new GeminiProvider('', { model: 'm' }).complete('hi')).rejects.toThrow('AI_API_KEY');
   expect(calls).toHaveLength(0);
+});
+
+test.describe('model selection', () => {
+  test('there is no default model: a call without AI_MODEL says how to find one', async () => {
+    const { fetch, calls } = fakeFetch({});
+    await expect(new GroqProvider('gsk-test', { fetch }).complete('hi')).rejects.toThrow('AI_MODEL is not set');
+    expect(calls).toHaveLength(0);
+  });
+
+  test('an unknown model fails with a pointer to npm run models, never a different model', async () => {
+    const { fetch, calls } = fakeFetch({ error: { message: 'The model does not exist', code: 'model_not_found' } }, 404);
+    const provider = new GroqProvider('gsk-test', { fetch, model: 'retired-model' });
+
+    await expect(provider.complete('hi')).rejects.toThrow('Groq has no model "retired-model"');
+    expect(calls).toHaveLength(1);
+    expect(calls[0].body.model).toBe('retired-model');
+  });
+
+  test('listModels returns the ids the key can use', async () => {
+    const groq = fakeFetch({ object: 'list', data: [{ id: 'openai/gpt-oss-120b', object: 'model' }, { id: 'qwen/qwen3.8-27b', object: 'model' }] });
+    expect(await new GroqProvider('gsk-test', { fetch: groq.fetch }).listModels()).toEqual(['openai/gpt-oss-120b', 'qwen/qwen3.8-27b']);
+    expect(groq.calls[0].url).toBe('https://api.groq.com/openai/v1/models');
+
+    const ollama = fakeFetch({ models: [{ name: 'llama3.1:8b' }, { name: 'qwen2.5-coder:7b' }] });
+    expect(await new OllamaProvider({ fetch: ollama.fetch }).listModels()).toEqual(['llama3.1:8b', 'qwen2.5-coder:7b']);
+    expect(ollama.calls[0].url).toBe('http://localhost:11434/api/tags');
+  });
 });

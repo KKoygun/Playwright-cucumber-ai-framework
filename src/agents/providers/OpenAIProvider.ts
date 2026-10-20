@@ -7,22 +7,22 @@ import { ChatProvider, ChatResult } from './ChatProvider';
  */
 export class OpenAIProvider extends ChatProvider {
   readonly providerName = 'OpenAI';
-  readonly model: string;
 
   private readonly client: OpenAI | null;
 
   constructor(apiKey: string, options: { model?: string; fetch?: typeof fetch } = {}) {
-    super();
-    this.model = options.model || 'gpt-4.1-mini';
+    super(options.model ?? '');
     this.client = apiKey ? new OpenAI({ apiKey, fetch: options.fetch }) : null;
   }
 
-  async chat(prompt: string): Promise<ChatResult> {
-    if (!this.client) {
-      throw new Error('OPENAI_API_KEY is not set. Copy .env.example to .env and add your key.');
-    }
+  async listModels(): Promise<string[]> {
+    const ids: string[] = [];
+    for await (const model of this.requireClient().models.list()) ids.push(model.id);
+    return ids;
+  }
 
-    const completion = await this.client.chat.completions.create({
+  protected async send(prompt: string): Promise<ChatResult> {
+    const completion = await this.requireClient().chat.completions.create({
       model: this.model,
       messages: [{ role: 'user', content: prompt }],
     });
@@ -32,5 +32,10 @@ export class OpenAIProvider extends ChatProvider {
       inputTokens: completion.usage?.prompt_tokens,
       outputTokens: completion.usage?.completion_tokens,
     };
+  }
+
+  private requireClient(): OpenAI {
+    if (!this.client) throw new Error('AI_API_KEY is not set. Copy .env.example to .env and add your key.');
+    return this.client;
   }
 }

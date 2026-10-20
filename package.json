@@ -12,6 +12,7 @@
     "a11y:baseline": "cucumber-js --profile a11yBaseline",
     "plan": "ts-node scripts/plan.ts",
     "generate": "ts-node scripts/generate.ts",
+    "models": "ts-node scripts/models.ts",
     "eval:healer": "ts-node scripts/eval-healer.ts",
     "eval:record": "ts-node scripts/eval-healer.ts --record",
     "report": "node scripts/generate-report.js",

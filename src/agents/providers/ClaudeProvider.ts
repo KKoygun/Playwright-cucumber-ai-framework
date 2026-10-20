@@ -7,22 +7,22 @@ import { ChatProvider, ChatResult } from './ChatProvider';
  */
 export class ClaudeProvider extends ChatProvider {
   readonly providerName = 'Claude';
-  readonly model: string;
 
   private readonly client: Anthropic | null;
 
   constructor(apiKey: string, options: { model?: string; fetch?: typeof fetch } = {}) {
-    super();
-    this.model = options.model || 'claude-opus-5-5';
+    super(options.model ?? '');
     this.client = apiKey ? new Anthropic({ apiKey, fetch: options.fetch }) : null;
   }
 
-  async chat(prompt: string): Promise<ChatResult> {
-    if (!this.client) {
-      throw new Error('ANTHROPIC_API_KEY is not set. Copy .env.example to .env and add your key.');
-    }
+  async listModels(): Promise<string[]> {
+    const ids: string[] = [];
+    for await (const model of this.requireClient().models.list()) ids.push(model.id);
+    return ids;
+  }
 
-    const response = await this.client.beta.messages.create({
+  protected async send(prompt: string): Promise<ChatResult> {
+    const response = await this.requireClient().beta.messages.create({
       model: this.model,
       max_tokens: 16000,
       messages: [{ role: 'user', content: prompt }],
@@ -44,5 +44,10 @@ export class ClaudeProvider extends ChatProvider {
       inputTokens: response.usage.input_tokens,
       outputTokens: response.usage.output_tokens,
     };
+  }
+
+  private requireClient(): Anthropic {
+    if (!this.client) throw new Error('AI_API_KEY is not set. Copy .env.example to .env and add your key.');
+    return this.client;
   }
 }
