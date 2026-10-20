@@ -1,39 +1,11 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig } from '@playwright/test';
 
 /**
- * Playwright config — used for CI reference and multi-browser configuration.
- * The primary test runner is Cucumber (cucumber.js). This config documents
- * the browser/device targets and is consumed by the GitHub Actions pipeline.
- *
- * @see https://playwright.dev/docs/test-configuration
+ * Unit tests only (npm run test:unit). The BDD suite runs through Cucumber (cucumber.js).
+ * Providers are tested against a fake fetch, so nothing here needs a network or an API key.
  */
 export default defineConfig({
-  testDir: './src',
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 4 : undefined,
-  reporter: 'html',
-
-  use: {
-    baseURL: 'https://demo.playwright.dev/todomvc',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-    headless: process.env.HEADLESS !== 'false',
-  },
-
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-  ],
+  testDir: './tests/unit',
+  reporter: 'list',
+  use: { headless: true },
 });

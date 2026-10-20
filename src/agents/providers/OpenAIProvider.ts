@@ -1,33 +1,36 @@
-import { AIProvider, HealingRequest, HealingResponse } from './AIProvider';
+import OpenAI from 'openai';
+import { ChatProvider, ChatResult } from './ChatProvider';
 
 /**
- * OpenAIProvider — OpenAI GPT adapter (stub).
- *
- * To activate:
- *   1. npm install openai
- *   2. Add OPENAI_API_KEY to your .env file
- *   3. Replace the error below with the OpenAI SDK call
- *   4. In src/support/world.ts, swap GeminiProvider for OpenAIProvider
- *
- * No other file needs to change — that is the point of the adapter pattern.
- *
- * Recommended model: gpt-4o-mini (cost-effective for selector analysis)
+ * OpenAIProvider — OpenAI Chat Completions API.
+ * Needs a pay-as-you-go key from https://platform.openai.com (a ChatGPT plan does not include API access).
  */
-export class OpenAIProvider implements AIProvider {
+export class OpenAIProvider extends ChatProvider {
   readonly providerName = 'OpenAI';
+  readonly model: string;
 
-  constructor(private readonly apiKey: string) {
-    void this.apiKey; // suppress unused warning until implemented
+  private readonly client: OpenAI | null;
+
+  constructor(apiKey: string, options: { model?: string; fetch?: typeof fetch } = {}) {
+    super();
+    this.model = options.model || 'gpt-4.1-mini';
+    this.client = apiKey ? new OpenAI({ apiKey, fetch: options.fetch }) : null;
   }
 
-  async complete(_prompt: string): Promise<string> {
-    throw new Error('OpenAIProvider is not yet implemented. See JSDoc for activation steps.');
-  }
+  async chat(prompt: string): Promise<ChatResult> {
+    if (!this.client) {
+      throw new Error('OPENAI_API_KEY is not set. Copy .env.example to .env and add your key.');
+    }
 
-  async analyzeFailure(_request: HealingRequest): Promise<HealingResponse> {
-    throw new Error(
-      'OpenAIProvider is not yet implemented. ' +
-        'See the JSDoc comment in this file for activation steps.'
-    );
+    const completion = await this.client.chat.completions.create({
+      model: this.model,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    return {
+      text: completion.choices[0]?.message?.content ?? '',
+      inputTokens: completion.usage?.prompt_tokens,
+      outputTokens: completion.usage?.completion_tokens,
+    };
   }
 }
