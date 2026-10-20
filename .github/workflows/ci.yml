@@ -7,6 +7,63 @@ on:
     branches: [main]
 
 jobs:
+  # ── Typecheck + unit tests (providers run against a fake fetch, no keys) ────
+  unit:
+    name: Typecheck & unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Unit tests
+        run: npm run test:unit
+
+  # ── Healer eval (replays recorded responses, so no API keys) ────────────────
+  eval-healer:
+    name: Healer eval (replay)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run eval
+        run: npm run eval:healer
+
+      - name: Upload eval results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: healer-eval
+          path: reports/eval/
+          retention-days: 30
+
   # ── Test Matrix ─────────────────────────────────────────────────────────────
   # Runs tests in parallel across tag groups, simulating real-world CI sharding.
   # Each job is independent so a failure in one group doesn't block others.
@@ -23,6 +80,7 @@ jobs:
           - '@add'
           - '@complete'
           - '@filter or @delete or @clear or @edit'
+          - '@a11y'
           - '@api'
 
     steps:
