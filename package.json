@@ -8,6 +8,8 @@
     "test:regression": "cucumber-js --profile regression",
     "test:ci": "cucumber-js --parallel 4",
     "test:unit": "playwright test",
+    "test:a11y": "cucumber-js --tags @a11y",
+    "a11y:baseline": "cucumber-js --profile a11yBaseline",
     "plan": "ts-node scripts/plan.ts",
     "generate": "ts-node scripts/generate.ts",
     "eval:healer": "ts-node scripts/eval-healer.ts",

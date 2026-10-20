@@ -16,6 +16,8 @@ dotenv.config();
 
 export interface WorldParameters {
   headless?: boolean;
+  /** Set by the a11yBaseline profile: record current violations instead of asserting. */
+  updateA11yBaseline?: boolean;
 }
 
 /**
@@ -36,6 +38,7 @@ export class CustomWorld extends World<WorldParameters> {
   page!: Page;
   healer!: HealerAgent;
   healing!: HealingLocator;
+  scenarioName = '';
 
   // ── API context (API tests) ─────────────────────────────────────────────
   apiRequest!: APIRequestContext;

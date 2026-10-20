@@ -11,7 +11,8 @@ if (healMode() === 'apply') setDefaultTimeout(60_000);
 
 // ── UI Tests (everything except @api) ──────────────────────────────────────
 
-Before({ tags: 'not @api' }, async function (this: CustomWorld) {
+Before({ tags: 'not @api' }, async function (this: CustomWorld, scenario) {
+  this.scenarioName = scenario.pickle.name;
   await this.init();
   await this.page.goto(BASE_URL);
 });

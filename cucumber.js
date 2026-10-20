@@ -36,4 +36,12 @@ module.exports = {
     ...common,
     tags: '@regression',
   },
+
+  // Rewrites a11y/baseline.json with the violations found now (npm run a11y:baseline)
+  a11yBaseline: {
+    ...common,
+    tags: '@a11y',
+    parallel: 1,
+    worldParameters: { updateA11yBaseline: true },
+  },
 };
