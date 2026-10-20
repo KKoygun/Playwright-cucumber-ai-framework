@@ -1,122 +1,48 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import {
-  AIProvider,
-  HealingRequest,
-  HealingResponse,
-  SelectorSuggestion,
-} from './AIProvider';
+import { ChatProvider, ChatResult } from './ChatProvider';
 
 /**
- * GeminiProvider — working AI provider using Google Gemini (free tier).
- *
- * Model: gemini-1.5-flash (fast, generous free quota)
- * Get your API key at: https://aistudio.google.com
- *
- * The prompt is engineered to return strict JSON so parsing is predictable.
- * HTML is stripped of scripts/styles and capped at 8 000 chars to stay
- * within the model's context window without burning tokens on boilerplate.
+ * GeminiProvider — Google Gemini (free tier).
+ * Get a key at https://aistudio.google.com
  */
-export class GeminiProvider implements AIProvider {
+export class GeminiProvider extends ChatProvider {
   readonly providerName = 'Gemini';
 
-  private readonly model: ReturnType<
-    InstanceType<typeof GoogleGenerativeAI>['getGenerativeModel']
-  >;
+  // The key is checked lazily: the healer only runs on failure, so tests pass without one.
+  private readonly client: GoogleGenerativeAI | null;
 
-  constructor(apiKey: string) {
-    if (!apiKey) {
-      // Model initialisation is deferred — the healer only runs on test failure,
-      // so tests pass normally without an API key being required.
-      this.model = null as never;
-      return;
-    }
-    const genAI = new GoogleGenerativeAI(apiKey);
-    this.model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
+  constructor(private readonly apiKey: string, options: { model?: string } = {}) {
+    super(options.model ?? '');
+    this.client = apiKey ? new GoogleGenerativeAI(apiKey) : null;
   }
 
-  async analyzeFailure(request: HealingRequest): Promise<HealingResponse> {
-    if (!this.model) {
-      throw new Error(
-        'GEMINI_API_KEY is not set. Copy .env.example to .env and add your key.'
-      );
-    }
+  async listModels(): Promise<string[]> {
+    this.requireClient();
+    // This SDK has no list call, so it goes to the REST endpoint directly
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000', {
+      headers: { 'x-goog-api-key': this.apiKey },
+    });
+    if (!response.ok) throw new Error(`Gemini returned ${response.status}: ${await response.text()}`);
 
-    const prompt = this.buildPrompt(request);
-    const result = await this.model.generateContent(prompt);
-    const rawText = result.response.text();
-    const suggestions = this.parseResponse(rawText);
+    const body = (await response.json()) as { models?: { name: string; supportedGenerationMethods?: string[] }[] };
+    return (body.models ?? [])
+      .filter((m) => m.supportedGenerationMethods?.includes('generateContent'))
+      .map((m) => m.name.replace(/^models\//, ''));
+  }
+
+  protected async send(prompt: string): Promise<ChatResult> {
+    const result = await this.requireClient().getGenerativeModel({ model: this.model }).generateContent(prompt);
+    const usage = result.response.usageMetadata;
 
     return {
-      scenarioName: request.scenarioName,
-      errorMessage: request.errorMessage,
-      pageUrl: request.pageUrl,
-      suggestions,
-      timestamp: new Date().toISOString(),
-      provider: this.providerName,
+      text: result.response.text(),
+      inputTokens: usage?.promptTokenCount,
+      outputTokens: usage?.candidatesTokenCount,
     };
   }
 
-  async complete(prompt: string): Promise<string> {
-    if (!this.model) {
-      throw new Error('GEMINI_API_KEY is not set.');
-    }
-    const result = await this.model.generateContent(prompt);
-    return result.response.text();
-  }
-
-  // ── Private ─────────────────────────────────────────────────────────────
-
-  private buildPrompt(request: HealingRequest): string {
-    const trimmedHtml = request.pageHtml
-      .replace(/<script[\s\S]*?<\/script>/gi, '')
-      .replace(/<style[\s\S]*?<\/style>/gi, '')
-      .slice(0, 8000);
-
-    return `You are a Playwright test automation expert specialising in selector healing.
-A Cucumber BDD test scenario has failed. Analyse the error and the current page HTML, then suggest better CSS selectors or XPath expressions to fix the failing test.
-
-## Failed Scenario
-${request.scenarioName}
-
-## Error Message
-${request.errorMessage}
-
-## Page URL
-${request.pageUrl}
-
-## Current Page HTML (trimmed, scripts and styles removed)
-\`\`\`html
-${trimmedHtml}
-\`\`\`
-
-## Instructions
-1. Identify which element the test tried to interact with based on the error message.
-2. Suggest 1–3 alternative selectors that would reliably target that element.
-3. Selector preference order: data-testid > aria roles > semantic HTML > CSS classes > XPath.
-4. Respond ONLY with a valid JSON array — no markdown fences, no explanation outside the array:
-
-[
-  {
-    "suggestedSelector": "css or xpath selector here",
-    "confidence": "high|medium|low",
-    "reasoning": "brief explanation of why this selector works"
-  }
-]`;
-  }
-
-  private parseResponse(rawText: string): SelectorSuggestion[] {
-    try {
-      const cleaned = rawText.replace(/```json|```/g, '').trim();
-      const parsed: unknown = JSON.parse(cleaned);
-      return Array.isArray(parsed) ? (parsed as SelectorSuggestion[]) : [parsed as SelectorSuggestion];
-    } catch {
-      return [
-        {
-          suggestedSelector: 'PARSE_ERROR',
-          confidence: 'low',
-          reasoning: `Could not parse AI response: ${rawText.slice(0, 300)}`,
-        },
-      ];
-    }
+  private requireClient(): GoogleGenerativeAI {
+    if (!this.client) throw new Error('GEMINI_API_KEY (or AI_API_KEY) is not set. Copy .env.example to .env and add your key.');
+    return this.client;
   }
 }

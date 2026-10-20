@@ -35,6 +35,10 @@ export interface HealingResponse {
   timestamp: string;
   /** Identifies which AI provider generated this response. */
   provider: string;
+  model?: string;
+  latencyMs?: number;
+  /** Token counts as reported by the provider, when it reports them. */
+  tokens?: { input?: number; output?: number };
 }
 
 export interface AIProvider {

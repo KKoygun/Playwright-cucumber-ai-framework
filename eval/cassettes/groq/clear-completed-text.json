@@ -1,0 +1,11 @@
+{
+  "provider": "groq",
+  "model": "openai/gpt-oss-120b",
+  "caseId": "clear-completed-text",
+  "promptSha256": "326b6129ce2b2e3171cd4bcf0d0cb641fb9209c758fb1886b9487ab77187231e",
+  "recordedAt": "2026-10-20T16:54:45.932Z",
+  "latencyMs": 8142,
+  "inputTokens": 954,
+  "outputTokens": 280,
+  "text": "[\n  {\n    \"suggestedSelector\": \"button.clear-completed\",\n    \"confidence\": \"high\",\n    \"reasoning\": \"The button has a unique CSS class 'clear-completed' which directly identifies it.\"\n  },\n  {\n    \"suggestedSelector\": \"//footer//button[contains(@class,'clear-completed')]\",\n    \"confidence\": \"high\",\n    \"reasoning\": \"XPath targeting the button by its class within the footer ensures precise location.\"\n  },\n  {\n    \"suggestedSelector\": \"//button[normalize-space()='Remove done']\",\n    \"confidence\": \"medium\",\n    \"reasoning\": \"The button's visible text is 'Remove done'; using exact text match works but is less robust if the label changes.\"\n  }\n]"
+}

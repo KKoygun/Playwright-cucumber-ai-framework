@@ -1,0 +1,32 @@
+{
+  "Completed filter view": [
+    "color-contrast | .selected",
+    "color-contrast | a[href$=\"#/active\"]",
+    "color-contrast | a[href$=\"remojansen/\"]",
+    "color-contrast | a[href$=\"todomvc.com\"]",
+    "color-contrast | a[href=\"#/\"]",
+    "color-contrast | h1",
+    "color-contrast | p:nth-child(1)",
+    "color-contrast | p:nth-child(2)",
+    "color-contrast | p:nth-child(3)"
+  ],
+  "Empty todo list": [
+    "color-contrast | a[href$=\"remojansen/\"]",
+    "color-contrast | a[href$=\"todomvc.com\"]",
+    "color-contrast | h1",
+    "color-contrast | p:nth-child(1)",
+    "color-contrast | p:nth-child(2)",
+    "color-contrast | p:nth-child(3)"
+  ],
+  "List with active and completed todos": [
+    "color-contrast | .selected",
+    "color-contrast | a[href$=\"#/active\"]",
+    "color-contrast | a[href$=\"#/completed\"]",
+    "color-contrast | a[href$=\"remojansen/\"]",
+    "color-contrast | a[href$=\"todomvc.com\"]",
+    "color-contrast | h1",
+    "color-contrast | p:nth-child(1)",
+    "color-contrast | p:nth-child(2)",
+    "color-contrast | p:nth-child(3)"
+  ]
+}

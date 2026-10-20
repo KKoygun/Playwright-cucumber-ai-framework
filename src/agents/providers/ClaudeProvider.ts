@@ -1,33 +1,53 @@
-import { AIProvider, HealingRequest, HealingResponse } from './AIProvider';
+import Anthropic from '@anthropic-ai/sdk';
+import { ChatProvider, ChatResult } from './ChatProvider';
 
 /**
- * ClaudeProvider — Anthropic Claude adapter (stub).
- *
- * To activate:
- *   1. npm install @anthropic-ai/sdk
- *   2. Add ANTHROPIC_API_KEY to your .env file
- *   3. Replace the error below with the Anthropic SDK call
- *   4. In src/support/world.ts, swap GeminiProvider for ClaudeProvider
- *
- * No other file needs to change — that is the point of the adapter pattern.
- *
- * Recommended model: claude-3-5-haiku-latest (fast + cheap for tooling tasks)
+ * ClaudeProvider — Anthropic Messages API.
+ * Needs an API key from https://console.anthropic.com (separate from a Claude.ai subscription).
  */
-export class ClaudeProvider implements AIProvider {
+export class ClaudeProvider extends ChatProvider {
   readonly providerName = 'Claude';
 
-  constructor(private readonly apiKey: string) {
-    void this.apiKey; // suppress unused warning until implemented
+  private readonly client: Anthropic | null;
+
+  constructor(apiKey: string, options: { model?: string; fetch?: typeof fetch } = {}) {
+    super(options.model ?? '');
+    this.client = apiKey ? new Anthropic({ apiKey, fetch: options.fetch }) : null;
   }
 
-  async complete(_prompt: string): Promise<string> {
-    throw new Error('ClaudeProvider is not yet implemented. See JSDoc for activation steps.');
+  async listModels(): Promise<string[]> {
+    const ids: string[] = [];
+    for await (const model of this.requireClient().models.list()) ids.push(model.id);
+    return ids;
   }
 
-  async analyzeFailure(_request: HealingRequest): Promise<HealingResponse> {
-    throw new Error(
-      'ClaudeProvider is not yet implemented. ' +
-        'See the JSDoc comment in this file for activation steps.'
-    );
+  protected async send(prompt: string): Promise<ChatResult> {
+    const response = await this.requireClient().beta.messages.create({
+      model: this.model,
+      max_tokens: 16000,
+      messages: [{ role: 'user', content: prompt }],
+      // If the model declines, the API retries on a fallback model in the same call.
+      betas: ['server-side-fallback-2026-07-01'],
+      fallbacks: 'default',
+    });
+
+    if (response.stop_reason === 'refusal') {
+      throw new Error(`Claude declined the request (${response.stop_details?.category ?? 'no category'})`);
+    }
+
+    const text = response.content
+      .map((block) => (block.type === 'text' ? block.text : ''))
+      .join('');
+
+    return {
+      text,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+    };
+  }
+
+  private requireClient(): Anthropic {
+    if (!this.client) throw new Error('ANTHROPIC_API_KEY (or AI_API_KEY) is not set. Copy .env.example to .env and add your key.');
+    return this.client;
   }
 }

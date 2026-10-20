@@ -1,25 +1,37 @@
 {
-  "name": "playwright-cucumber-ai-portfolio",
+  "name": "playwright-cucumber-ai-framework",
   "version": "1.0.0",
   "description": "Playwright + Cucumber BDD + AI Self-Healing Test Framework",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "test": "cucumber-js",
     "test:smoke": "cucumber-js --profile smoke",
     "test:regression": "cucumber-js --profile regression",
     "test:ci": "cucumber-js --parallel 4",
+    "test:unit": "playwright test",
+    "test:a11y": "cucumber-js --tags @a11y",
+    "a11y:baseline": "cucumber-js --profile a11yBaseline",
     "plan": "ts-node scripts/plan.ts",
     "generate": "ts-node scripts/generate.ts",
+    "models": "ts-node scripts/models.ts",
+    "eval:healer": "ts-node scripts/eval-healer.ts",
+    "eval:record": "ts-node scripts/eval-healer.ts --record",
     "report": "node scripts/generate-report.js",
     "allure:generate": "allure generate allure-results --clean -o allure-report",
     "allure:open": "allure open allure-report",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
     "@google/generative-ai": "^0.21.0",
     "dotenv": "^16.4.7",
-    "groq-sdk": "^1.1.2"
+    "groq-sdk": "^1.1.2",
+    "openai": "^7.39.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@cucumber/cucumber": "^11.1.0",
     "@playwright/test": "^1.50.1",
     "@types/node": "^22.10.0",

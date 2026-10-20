@@ -1,0 +1,11 @@
+{
+  "provider": "groq",
+  "model": "openai/gpt-oss-120b",
+  "caseId": "toggle-class",
+  "promptSha256": "fc74e17bce0342ccb90a90e81accdb7784e08eea4735826777179e5e957c4828",
+  "recordedAt": "2026-10-20T16:54:15.082Z",
+  "latencyMs": 1253,
+  "inputTokens": 964,
+  "outputTokens": 516,
+  "text": "[\n  {\n    \"suggestedSelector\": \"li[data-testid='todo-item'] >> nth=1 >> input.todo-check\",\n    \"confidence\": \"high\",\n    \"reasoning\": \"Each todo item has a stable data-testid; selecting the second item and its checkbox by class .todo-check reliably targets the toggle.\"\n  },\n  {\n    \"suggestedSelector\": \"(//li[@data-testid='todo-item'])[2]//input[@aria-label='Toggle Todo']\",\n    \"confidence\": \"medium\",\n    \"reasoning\": \"XPath uses the same data-testid and the explicit aria-label of the checkbox, ensuring correct element even if class names change.\"\n  },\n  {\n    \"suggestedSelector\": \"role=checkbox[name='Toggle Todo'] >> nth=1\",\n    \"confidence\": \"medium\",\n    \"reasoning\": \"Playwright's role selector finds the second checkbox with the accessible name \\\"Toggle Todo\\\", independent of DOM structure or CSS classes.\"\n  }\n]"
+}

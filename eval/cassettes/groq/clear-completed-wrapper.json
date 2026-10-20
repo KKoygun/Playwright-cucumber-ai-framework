@@ -1,0 +1,11 @@
+{
+  "provider": "groq",
+  "model": "openai/gpt-oss-120b",
+  "caseId": "clear-completed-wrapper",
+  "promptSha256": "680905c4250f8763e0d40e4290a3961169a98da8d5092e3c8742fd53f52b8daf",
+  "recordedAt": "2026-10-20T16:54:29.944Z",
+  "latencyMs": 1310,
+  "inputTokens": 956,
+  "outputTokens": 411,
+  "text": "[\n  {\n    \"suggestedSelector\": \"footer.footer button.clear-completed\",\n    \"confidence\": \"high\",\n    \"reasoning\": \"Selects the button with class 'clear-completed' that is a descendant of the footer element with class 'footer', matching the intended element regardless of the intermediate div.\"\n  },\n  {\n    \"suggestedSelector\": \"//footer[contains(@class,'footer')]//button[contains(@class,'clear-completed')]\",\n    \"confidence\": \"high\",\n    \"reasoning\": \"XPath directly targets the button by its class within the footer, bypassing the extra div layer.\"\n  },\n  {\n    \"suggestedSelector\": \"button:has-text(\\\"Clear completed\\\")\",\n    \"confidence\": \"medium\",\n    \"reasoning\": \"Uses Playwright's text selector to find the button by its visible label, which is stable even if class names change.\"\n  }\n]"
+}

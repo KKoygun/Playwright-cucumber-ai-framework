@@ -1,0 +1,11 @@
+{
+  "provider": "groq",
+  "model": "openai/gpt-oss-120b",
+  "caseId": "clear-completed-class",
+  "promptSha256": "d0a699b9ac733580e17e15dfdda6af84588ce3e13c98a361fb1d5e0f3a149487",
+  "recordedAt": "2026-10-20T16:54:18.061Z",
+  "latencyMs": 1089,
+  "inputTokens": 945,
+  "outputTokens": 321,
+  "text": "[\n  {\n    \"suggestedSelector\": \"button.btn-clear\",\n    \"confidence\": \"high\",\n    \"reasoning\": \"The Clear completed button has a unique class 'btn-clear' and is the only <button> with that class on the page.\"\n  },\n  {\n    \"suggestedSelector\": \"//button[contains(normalize-space(), 'Clear completed')]\",\n    \"confidence\": \"high\",\n    \"reasoning\": \"XPath selects the button whose visible text includes 'Clear completed', which uniquely identifies the element.\"\n  },\n  {\n    \"suggestedSelector\": \"footer.footer button.btn-clear\",\n    \"confidence\": \"medium\",\n    \"reasoning\": \"Scoped selector within the footer ensures the correct button even if other buttons with similar classes appear elsewhere.\"\n  }\n]"
+}

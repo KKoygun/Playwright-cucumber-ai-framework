@@ -8,7 +8,7 @@ import { TodoPage } from '../pages/TodoPage';
 When(
   'I double-click the todo {string} and type {string} and press Enter',
   async function (this: CustomWorld, todoText: string, newText: string) {
-    const todoPage = new TodoPage(this.page);
+    const todoPage = new TodoPage(this.page, this.healing);
     const items = await todoPage.todoItems.all();
     let index = 0;
     for (let i = 0; i < items.length; i++) {

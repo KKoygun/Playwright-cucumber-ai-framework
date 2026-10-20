@@ -1,0 +1,11 @@
+{
+  "provider": "groq",
+  "model": "openai/gpt-oss-120b",
+  "caseId": "new-todo-class",
+  "promptSha256": "c9669cc269c4d5ec9fdc55bf807551a2c40163e81e65b965731c366686e8d225",
+  "recordedAt": "2026-10-20T16:54:12.017Z",
+  "latencyMs": 1309,
+  "inputTokens": 945,
+  "outputTokens": 312,
+  "text": "[\n  {\n    \"suggestedSelector\": \"input.todo-input\",\n    \"confidence\": \"high\",\n    \"reasoning\": \"The new‑todo input has a unique class 'todo-input' which directly identifies it.\"\n  },\n  {\n    \"suggestedSelector\": \"input[placeholder='What needs to be done?']\",\n    \"confidence\": \"high\",\n    \"reasoning\": \"The placeholder text is unique to the new‑todo field, making this attribute selector reliable.\"\n  },\n  {\n    \"suggestedSelector\": \"//input[@placeholder='What needs to be done?']\",\n    \"confidence\": \"medium\",\n    \"reasoning\": \"XPath targeting the same unique placeholder attribute; works if CSS selectors are insufficient.\"\n  }\n]"
+}

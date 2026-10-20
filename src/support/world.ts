@@ -7,14 +7,17 @@ import {
   request as playwrightRequest,
   APIRequestContext,
 } from '@playwright/test';
-import { HealerAgent } from '../agents/HealerAgent';
-import { GroqProvider } from '../agents/providers/GroqProvider';
+import { HealerAgent, healMode } from '../agents/HealerAgent';
+import { createProvider } from '../agents/providers/createProvider';
+import { HealingLocator } from '../utils/HealingLocator';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
 export interface WorldParameters {
   headless?: boolean;
+  /** Set by the a11yBaseline profile: record current violations instead of asserting. */
+  updateA11yBaseline?: boolean;
 }
 
 /**
@@ -34,6 +37,8 @@ export class CustomWorld extends World<WorldParameters> {
   context!: BrowserContext;
   page!: Page;
   healer!: HealerAgent;
+  healing!: HealingLocator;
+  scenarioName = '';
 
   // ── API context (API tests) ─────────────────────────────────────────────
   apiRequest!: APIRequestContext;
@@ -53,10 +58,13 @@ export class CustomWorld extends World<WorldParameters> {
     });
     this.page = await this.context.newPage();
 
-    // ── Swap provider here to switch AI backends ──────────────────────────
-    const apiKey = process.env.GROQ_API_KEY ?? '';
-    const provider = new GroqProvider(apiKey);
+    // ── Swap provider here: AI_PROVIDER + AI_MODEL in .env, or e.g. new OllamaProvider({ model }) ──
+    const provider = createProvider();
     this.healer = new HealerAgent(provider);
+    this.healing = new HealingLocator(this.page, this.healer);
+
+    // In apply mode an action must fail fast enough to leave time for healing and a retry
+    if (healMode() === 'apply') this.page.setDefaultTimeout(5000);
   }
 
   /** Initialise API request context for @api test scenarios (no browser). */
