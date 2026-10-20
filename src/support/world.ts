@@ -8,7 +8,7 @@ import {
   APIRequestContext,
 } from '@playwright/test';
 import { HealerAgent } from '../agents/HealerAgent';
-import { GroqProvider } from '../agents/providers/GroqProvider';
+import { createProvider } from '../agents/providers/createProvider';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -53,9 +53,8 @@ export class CustomWorld extends World<WorldParameters> {
     });
     this.page = await this.context.newPage();
 
-    // ── Swap provider here to switch AI backends ──────────────────────────
-    const apiKey = process.env.GROQ_API_KEY ?? '';
-    const provider = new GroqProvider(apiKey);
+    // ── Swap provider here: AI_PROVIDER in .env, or e.g. new OllamaProvider() ──
+    const provider = createProvider();
     this.healer = new HealerAgent(provider);
   }
 

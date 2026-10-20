@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import { PlannerAgent } from '../src/agents/PlannerAgent';
-import { GroqProvider } from '../src/agents/providers/GroqProvider';
+import { createProvider } from '../src/agents/providers/createProvider';
 import { StepParser } from '../src/utils/StepParser';
 
 dotenv.config();
@@ -33,7 +33,7 @@ async function main(): Promise<void> {
   console.log(`[Planner] Requirements: ${requirementsPath}`);
   console.log(`[Planner] Found ${existingStepPatterns.length} existing step pattern(s) to reuse`);
 
-  const provider = new GroqProvider(process.env.GROQ_API_KEY ?? '');
+  const provider = createProvider();
   const planner = new PlannerAgent(provider);
 
   const result = await planner.generateFeature({

@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import { GeneratorAgent } from '../src/agents/GeneratorAgent';
-import { GroqProvider } from '../src/agents/providers/GroqProvider';
+import { createProvider } from '../src/agents/providers/createProvider';
 import { StepParser } from '../src/utils/StepParser';
 
 dotenv.config();
@@ -61,7 +61,7 @@ async function main(): Promise<void> {
 
   // ── Step 4: Generate missing step definitions ─────────────────────────────
   const pomContent = fs.readFileSync(path.join('src', 'pages', 'TodoPage.ts'), 'utf-8');
-  const provider = new GroqProvider(process.env.GROQ_API_KEY ?? '');
+  const provider = createProvider();
   const generator = new GeneratorAgent(provider);
 
   const result = await generator.generateSteps({ missingSteps, pomContent });
