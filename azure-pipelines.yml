@@ -50,17 +50,13 @@ stages:
           - script: npm ci
             displayName: Install dependencies
 
-          - script: |
-              npx cucumber-js \
-                --tags "@api" \
-                --format json:reports/cucumber-report-api.json \
-                --format html:reports/cucumber-report-api.html \
-                --format progress-bar
+          - script: npx cucumber-js --tags "@api"
             displayName: Run API tests (no browser required)
             env:
               GROQ_API_KEY: $(GROQ_API_KEY)
               AI_MODEL: $(AI_MODEL)
               CI: true
+              REPORT_SUFFIX: api
 
           - task: PublishPipelineArtifact@1
             condition: always()

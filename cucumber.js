@@ -1,5 +1,8 @@
 const parallel = process.env.CI ? 4 : 1;
 
+// CI shards set REPORT_SUFFIX so each shard writes its own report file for the merge job
+const report = `reports/cucumber-report${process.env.REPORT_SUFFIX ? '-' + process.env.REPORT_SUFFIX : ''}`;
+
 const common = {
   require: [
     'src/support/world.ts',
@@ -11,8 +14,8 @@ const common = {
   parallel,
   format: [
     'progress-bar',
-    'json:reports/cucumber-report.json',
-    'html:reports/cucumber-report.html',
+    `json:${report}.json`,
+    `html:${report}.html`,
     'allure-cucumberjs/reporter',
   ],
   formatOptions: {

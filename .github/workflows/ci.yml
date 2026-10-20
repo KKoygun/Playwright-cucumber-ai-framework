@@ -106,7 +106,8 @@ jobs:
           AI_PROVIDER: ${{ vars.AI_PROVIDER || 'groq' }}
           AI_MODEL: ${{ vars.AI_MODEL }}
           CI: true
-        run: npx cucumber-js --tags "${{ matrix.tag }}" --format json:reports/cucumber-report-${{ strategy.job-index }}.json --format html:reports/cucumber-report-${{ strategy.job-index }}.html --format progress-bar --format allure-cucumberjs/reporter
+          REPORT_SUFFIX: ${{ strategy.job-index }}
+        run: npx cucumber-js --tags "${{ matrix.tag }}"
 
       - name: Upload Allure results
         uses: actions/upload-artifact@v4
