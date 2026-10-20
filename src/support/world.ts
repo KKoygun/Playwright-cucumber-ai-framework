@@ -7,8 +7,9 @@ import {
   request as playwrightRequest,
   APIRequestContext,
 } from '@playwright/test';
-import { HealerAgent } from '../agents/HealerAgent';
+import { HealerAgent, healMode } from '../agents/HealerAgent';
 import { createProvider } from '../agents/providers/createProvider';
+import { HealingLocator } from '../utils/HealingLocator';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -34,6 +35,7 @@ export class CustomWorld extends World<WorldParameters> {
   context!: BrowserContext;
   page!: Page;
   healer!: HealerAgent;
+  healing!: HealingLocator;
 
   // ── API context (API tests) ─────────────────────────────────────────────
   apiRequest!: APIRequestContext;
@@ -56,6 +58,10 @@ export class CustomWorld extends World<WorldParameters> {
     // ── Swap provider here: AI_PROVIDER in .env, or e.g. new OllamaProvider() ──
     const provider = createProvider();
     this.healer = new HealerAgent(provider);
+    this.healing = new HealingLocator(this.page, this.healer);
+
+    // In apply mode an action must fail fast enough to leave time for healing and a retry
+    if (healMode() === 'apply') this.page.setDefaultTimeout(5000);
   }
 
   /** Initialise API request context for @api test scenarios (no browser). */

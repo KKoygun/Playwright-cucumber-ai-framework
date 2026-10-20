@@ -56,6 +56,7 @@ ${request.pomContent}
 - Import: import { CustomWorld } from '../support/world';
 - Import: import { TodoPage } from '../pages/TodoPage';
 - Use async function (this: CustomWorld, ...)
+- Create the page object with: new TodoPage(this.page, this.healing)
 - Use Cucumber parameter types: {string} for strings, {int} for numbers
 - Convert 1-based step index to 0-based when calling page object methods (index - 1)
 - Return ONLY valid TypeScript — no markdown fences, no explanation, no imports duplication`;
