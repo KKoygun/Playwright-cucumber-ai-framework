@@ -4,7 +4,7 @@
 
 A portfolio project demonstrating senior-level test automation architecture: **Playwright**, **Cucumber BDD**, **REST API testing**, and a suite of **AI agents** (Healer, Planner, Generator) built on a provider-agnostic adapter pattern.
 
-> All production experience over the past 6 years is in private company repositories. This project exists to make that expertise publicly visible.
+> All production experience over the past 7+ years is in private company repositories. This project exists to make that expertise publicly visible.
 
 ---
 
